@@ -32,27 +32,85 @@ args = parser.parse_args()
         print(str(a) + ": " + str(args.__dict__[a]))
         print("Ports number accessed by variable name ports :{}" .format(args.server_ports))'''
 
-HEADER = 64
+HEADER = 8192
 NO_OF_PORTS = args.server_ports
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 SERVER = socket.gethostbyname(socket.gethostname())
+APPLICATION_DATA = ""
 
-def send(client,msg):
+def simplesend(client,msg):
+    print(msg)
+    message = msg.encode(FORMAT)
+    msg_length = len(message)
+    send_length = str(msg_length).encode(FORMAT)
+    send_length += b' ' * (HEADER - len(send_length))
+    a = client.send(send_length)
+    client.send(message)
+    msg = client.recv(1024)
+    print(msg.decode(FORMAT) + str(a) + ": Empty")
+
+def send(client,msg,clientNo):
     message = msg.encode(FORMAT)
     msg_length = len(message)
     send_length = str(msg_length).encode(FORMAT)
     send_length += b' ' * (HEADER - len(send_length))
     client.send(send_length)
     client.send(message)
+    connected = True
+    data=""
+    while connected:
+        msg_length = client.recv(HEADER).decode(FORMAT)
+        if msg_length:
+            msg_length = len(msg_length)
+            msg = client.recv(msg_length).decode(FORMAT)
+            if msg[:8]=="filesize":
+                msg.split(" ")
+                filesize=int(msg[1])
+                part = filesize/int(NO_OF_PORTS)
+                
+                print(part,clientNo,client)
+
+                offset = b' ' * part * (clientNo-1)
+                end = offset + part 
+                msg = str(offset) +" "+ str(end) 
+               
+                print(msg)
+            
+                client.simplesend(msg)
+                #receiving file
+                while connected:
+                    msg_length = client.recv(HEADER).decode(FORMAT)
+                    msg = conn.recv(msg_length).decode(FORMAT)
+                    if msg_length:
+                        data= data + msg
+                    if msg == DISCONNECT_MESSAGE:
+                        connected = False
+                        return data
+        if len(data) == len(str(end-offset)):
+                        connected = False
+                        return data
+        connected = False
+        #just printing for now later store it in dictionary//array to gather all dataprts
+        print(data)
+        conn.send("Msg received".encode(FORMAT))
+        return ""
+        
+
+        
+    conn.close()
+
     print(client.recv(2048).decode(FORMAT))
 
 def connectToServer(SERVER,PORT,clientNo):
     client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     ADDR = (SERVER, PORT)
     client.connect(ADDR)
-    send(client,f"Client {clientNo} connected")
-    send(client,"DISCONNECT")
+    client.send("Hello i m error".encode(FORMAT))
+    simplesend(client,f"Server {clientNo} connected")
+    send(client,"Receving File",clientNo)
+   # send(client,f"    ")
+    simplesend(client,"DISCONNECT")
 clientNo = 1
 for i in NO_OF_PORTS :
     thread = threading.Thread(target=connectToServer, args=(SERVER, i,clientNo))

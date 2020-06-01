@@ -2,6 +2,7 @@ import argparse
 import os
 import socket 
 import threading
+import file_handling
 
 parser = argparse.ArgumentParser()
 #verify correct working base directory is provided Or raises NotADirectoryError
@@ -32,11 +33,20 @@ for a in args.__dict__:
 '''
 Handling server actionss
 '''
-HEADER = 64
+HEADER = 8192
 NO_OF_PORTS = args.server_ports
 SERVER = socket.gethostbyname(socket.gethostname())
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "DISCONNECT"
+
+def simpleSend(conn,msg):
+    message = msg.encode(FORMAT)
+    msg_length = len(message)
+    send_length = str(msg_length).encode(FORMAT)
+    send_length += b' ' * (HEADER - len(send_length))
+    conn.send(send_length)
+    conn.send(message)
+
 
 def handle_client(conn, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
@@ -44,14 +54,28 @@ def handle_client(conn, addr):
     connected = True
     while connected:
         msg_length = conn.recv(HEADER).decode(FORMAT)
+        print(msg_length)
         if msg_length:
-            msg_length = int(msg_length)
+            msg_length = len(msg_length)
             msg = conn.recv(msg_length).decode(FORMAT)
             if msg == DISCONNECT_MESSAGE:
                 connected = False
-
-            print(f"[{addr}] {msg}")
-            conn.send("Msg received".encode(FORMAT))
+                continue
+            if msg[:11]=="Receving File":
+                with open("code.txt") as file:
+                    size = os.path.getsize(file)
+                    msg = "filesize "+str(size)
+                    simpleSend(conn,msg)
+                    msg_length = conn.recv(HEADER).decode(FORMAT)
+                    if msg_length:
+                        msg_length = int(msg_length)
+                        msg = conn.recv(msg_length).decode(FORMAT)
+                        msg.split()
+                        data = file_handling.get_file_part(filename,msg[0],msg[0])
+                        conn.send(data.encode(FORMAT))
+            else:
+                print(f"[{addr}] {msg}")
+                conn.send("Msg received".encode(FORMAT))
 
     conn.close()
 
