@@ -13,10 +13,11 @@ parser = argparse.ArgumentParser()
 
 
 def dir_path(string):
-    if os.path.isdir(string):
-        return string
-    else:
-        raise NotADirectoryError(string)
+    return string
+    # if os.path.isdir(string):
+    #     return string
+    # else:
+    #     raise NotADirectoryError(string)
 # validates ip address
 
 
@@ -31,7 +32,7 @@ def ip(string):
 parser.add_argument("-i", "--status_interval", metavar="Reporting Interval", type=int,
                     required=True,  help="Time interval between metric reporting in seconds E.g 5(seconds)")
 parser.add_argument("-o", "--output_directory", type=dir_path,
-                    default=os.getcwd(),  help="path of output directory")
+                    help="path of output directory")
 parser.add_argument("-a", "--ipaddr", type=ip,
                     required=True, help="IP address of server")
 parser.add_argument("-p", "--server_ports", metavar="", type=int, nargs="+", required=True,
@@ -58,6 +59,7 @@ APPLICATION_DATA = b''
 # recvBytes = 0 ...for overall average downloading speed
 TIME_PASSED = 0
 TIME_FLAG = True
+OUTPUT_FILE = args.output_directory
 
 
 def calcTime(startTime):
@@ -186,4 +188,4 @@ for i in range(len(Dict)):
 
 # writing all chunks in order to output file
 file_handling.write_file(
-    "C:\\Users\\user\\Desktop\\CN_Project\\video2.mp4", APPLICATION_DATA)
+    OUTPUT_FILE, APPLICATION_DATA)

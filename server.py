@@ -8,11 +8,12 @@ parser = argparse.ArgumentParser()
 # verify correct working base directory is provided Or raises NotADirectoryError
 
 
-def dir_path(string):
-    if os.path.isdir(string):
+def file_path(string):
+    if os.path.isfile(string):
         return string
     else:
-        raise NotADirectoryError(string)
+        raise argparse.ArgumentTypeError(
+            "{0} file does not exist".format(string))
 
 
 # command line command to run it : server.py -n 4  -p 10002 10003 10004 10005 -i 2
@@ -20,8 +21,8 @@ parser.add_argument("-i", "--status_interval", metavar="Reporting Interval", typ
                     required=True,  help="Time interval For server status reporting in seconds E.g 5(seconds)")
 parser.add_argument("-n", "--num_servers", type=int, choices=range(1, 5),
                     required=True, help="Total number of virtual servers E.g 4")
-parser.add_argument("-f", "--base_directory", type=dir_path,
-                    default=os.getcwd(),  help="Address pointing to the file location")
+parser.add_argument("-f", "--output_file_path", type=file_path,
+                    default=os.getcwd(),  help="Address to the file location that client will download")
 parser.add_argument("-p", "--server_ports", metavar="", type=int, nargs="*", required=True,
                     help="(‘n’ port numbers, one for each server max=4) E.g 101 102 103 104")
 
@@ -46,7 +47,8 @@ NO_OF_PORTS = args.server_ports
 SERVER = socket.gethostbyname(socket.gethostname())
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "DISCONNECT"
-FILE = 'video.mp4'
+FILE = args.output_file_path
+#FILE = 'video.mp4'
 # we can make it dynamic by first receiving filename from client and respond if it exists!
 
 ''' 
@@ -147,5 +149,6 @@ for t in threads:
     t.join()
 
 print("[STARTING] .....")
+print("Server IP " + socket.gethostbyname(socket.gethostname()))
 if __name__ == "__main__":
     start()
