@@ -1,7 +1,8 @@
 # CN_Project
 Group Members:
-    > [Bilal Waheed] (https://github.com/bilalwaheed099)
-    > [Malik Idrees] (https://github.com/Malik-Idrees)
+[Bilal Waheed](https://github.com/bilalwaheed099/)
+[Malik Idrees](https://github.com/Malik-Idrees/)
+
 python virtual multiserver downloader where a number of virtual servers are created and a file is downloaded simultaneously from all of them<br/>
 To test run it store a video.mp4 file in root directory and use commands given below<br/>
 -n : No of virtual servers<br/>
